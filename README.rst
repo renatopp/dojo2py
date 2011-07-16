@@ -10,7 +10,7 @@ Dependencies (server):
 
 Running:
 
-First up the server:
+First up the server::
 
     cd dojo2py/server
     python server.py
