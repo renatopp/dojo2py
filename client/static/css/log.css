@@ -1,0 +1,23 @@
+#log {
+    border:1px solid #888;
+    border-left:10px solid #666;
+    background:#222;
+    width: 250px;
+    height: 99%;
+    overflow: scroll;
+    position: absolute;
+    top:0px;
+    right:0px;
+}
+
+#log p.log-normal {
+    color:#77aadd;
+}
+
+#log .log-error {
+    color:#ea4848;
+}
+
+#log .log-warning {
+    color:#f4f40c;
+}

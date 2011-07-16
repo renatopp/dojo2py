@@ -1,0 +1,16 @@
+.sync {
+    color:red;
+}
+p {
+    margin:0;
+    padding:0;
+}
+.pad,.editor {
+    width: 800px;
+    height: 200px;
+    margin:0;
+    padding:0;
+}
+.pad {
+    padding-bottom:10px;
+}
