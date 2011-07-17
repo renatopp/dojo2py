@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Dojo2py</title>
+    <link href="static/css/reset.css" rel="stylesheet"></link>
     <link href="static/css/client.css" rel="stylesheet"></link>
     <link href="static/css/log.css" rel="stylesheet"></link>
 
@@ -24,15 +25,42 @@
 </head>
 
 <body>
-    <h1>Dojo2py</h1>
+    <div id="main">
+        <div id="main-editor">
+            <div id="top-bar">
+            </div>
 
-    <div class="pad">
-      <pre id="maineditor" alt="lol123" class="editor"></pre>
-    </div>
-    <div class="pad">
-      <pre id="testeditor" alt="hihi" class="editor"></pre>
-    </div>
+            <div class="pad">
+                <pre id="maineditor" alt="lol123" class="editor"></pre>
+                <!-- <div class="padinfo">mainfile.py</div> -->
+            </div>
 
-    <div id="log"></div>
+            <div class="pad">
+                <pre id="testeditor" alt="hihi" class="editor"></pre>
+                <!-- <div class="padinfo">mainfile.py</div> -->
+            </div>
+        </div>
+        <div id="rightbar">
+            <div class="logo">
+                <img src="static/images/logo-mini.png">
+            </div>
+
+            <div class="box-rightbar">
+                <div class="title">
+                    <h1>Participantes</h1>
+                </div>
+                lol
+            </div>
+
+            <div class="box-rightbar">
+                <div class="title">
+                    <h1>Log</h1>
+                </div>
+
+                <div id="log">
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

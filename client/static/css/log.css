@@ -1,4 +1,8 @@
 #log {
+    background:#141414;
+    height:250px;
+    overflow: scroll;
+    /*display:none;
     border:1px solid #888;
     border-left:10px solid #666;
     background:#222;
@@ -7,7 +11,7 @@
     overflow: scroll;
     position: absolute;
     top:0px;
-    right:0px;
+    right:0px;*/
 }
 
 #log p.log-normal {
