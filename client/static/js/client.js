@@ -2,8 +2,7 @@ var timer = $.timer();
 var socket = null;
 var difflib = new diff_match_patch();
 
-var editor = null;
-var last_state = "";
+var users_online = [];
 
 var pads = {
     names: [],
@@ -19,6 +18,8 @@ var init = function() {
     init_editor("maineditor", "testeditor");
     init_timer();
     init_sockets();
+    add_user($("#user-email").val(), $("#user-email-hash").val(), $("#user-name").val())
+    // remove_user($("#user-email-hash").val());
 }
 
 var init_editor = function() {
@@ -127,4 +128,25 @@ var split_command = function(msg) {
     }
 
     log("Invalid command from server", "error")
+}
+
+
+//====
+
+var add_user = function(email, email_hash, name) {
+    users_online.push(email_hash);
+
+    var gravatar = "http://www.gravatar.com/avatar/";
+    var html = "<div id='user-"+email_hash+"' class='user'>"
+    html += "<img src='"+gravatar+email_hash+"?s=25'>"
+    html += "<span class='name'>"+name+"</span>"
+    html += "</div>"
+
+    $("#user-bar").append(html);
+}
+
+var remove_user = function(email_hash) {
+    users_online.pop(email_hash);
+    $("#user-"+email_hash).remove();
+    // alert($("#user-renato.ppontes@gmail.com").append("lol"));
 }

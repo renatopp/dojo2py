@@ -67,7 +67,7 @@ body {
     height:35px;
     background:#b0b0b0;
     color:#e97e14;
-    font-size:20px;
+    font-size:18px;
     font-weight:bold;
 }
 .box-rightbar .title h1 {
@@ -99,7 +99,28 @@ p {
     background:#e0e0e0;
 }
 .pad .padinfo {
-    
     color:white;
     z-index:15;
+}
+
+
+#user-bar {;
+    height:250px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+#user-bar .user {
+    height:30px;
+    padding-left:5px;
+    vertical-align: middle;
+    border-top:1px dashed #77aadd;
+}
+#user-bar .user img {
+    float:left;
+    margin-top:3px;
+}
+#user-bar .user .name {
+    color:#141414;
+    margin-left:5px;
+    line-height:30px;
 }
