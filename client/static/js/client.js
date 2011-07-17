@@ -1,24 +1,40 @@
-var editor = null;
 var timer = $.timer();
 var socket = null;
-
-var last_state = "";
 var difflib = new diff_match_patch();
+
+var editor = null;
+var last_state = "";
+
+var pads = {
+    names: [],
+    editor: {},
+    state: {},
+    doc_name: {},
+};
+
+var doc_names = {};
 
 
 var init = function() {
-    init_editor();
+    init_editor("maineditor", "testeditor");
     init_timer();
     init_sockets();
 }
 
 var init_editor = function() {
-    editor = ace.edit("dojoeditor");
     var PythonMode = require("ace/mode/python").Mode;
-    editor.getSession().setMode(new PythonMode());
-    editor.setTheme("ace/theme/monokai");
-    // editor.getSession().setValue('trambone juquinha');
-    // last_state = 'trambone juquinha';
+
+    for (var i=0; i<arguments.length; i++) {
+        var name = arguments[i];
+        pads.editor[name] = ace.edit(name);
+        pads.state[name] = "";
+        pads.doc_name[name] = $('#'+name).attr("alt");
+        pads.names.push(name);
+        doc_names[pads.doc_name[name]] = name;
+
+        pads.editor[name].getSession().setMode(new PythonMode());
+        pads.editor[name].setTheme("ace/theme/monokai");
+    }
 }
 
 var init_timer = function() {
@@ -38,27 +54,31 @@ var init_sockets = function() {
 
             socket.onopen = function() {
                 log('Connection made');
-                socket.send("CMD CONTENT");
+                for (var i=0; i<pads.names.length; i++) {
+                    var name = pads.names[i];
+                    socket.send("CMD OPENDOCUMENT:"+pads.doc_name[name]);
+                }
             }
             
             socket.onmessage = function(msg) {
-                var data = msg.data;
+                var data = split_command(msg.data);
+                var command = data[0];
+                var doc_name = data[1];
+                var args = data[2];
+                var name = doc_names[doc_name];
 
-                if (data.slice(0, 11) == "CMD CONTENT") {
+                if (command == "CMD CONTENT") {
                     log("Updating with server content");
-
-                    var new_text = data.slice(12);
-                    editor.getSession().setValue(new_text);
-                    last_state = new_text;
-                } else if (data.slice(0, 9) == "CMD PATCH") {
+                    pads.editor[name].getSession().setValue(args);
+                    pads.state[name] = args;
+                } else if (command == "CMD PATCH") {
                     log("Applying changes");
 
-                    var patches_text = data.slice(10);
-                    var patches = difflib.patch_fromText(patches_text);
-                    var text = editor.getSession().getValue();
+                    var patches = difflib.patch_fromText(args);
+                    var text = pads.editor[name].getSession().getValue();
                     var new_text = difflib.patch_apply(patches, text)[0];
-                    editor.getSession().setValue(new_text);
-                    last_state = new_text;
+                    pads.editor[name].getSession().setValue(new_text);
+                    pads.state[name] = new_text;
                 }
             }
             
@@ -72,17 +92,39 @@ var init_sockets = function() {
 }
 
 var update = function() {
-    var text = editor.getSession().getValue();
-    var diff = difflib.diff_main(last_state, text);
+    for (var i=0; i<pads.names.length; i++) {
+        var name = pads.names[i];
 
-    if (diff.length > 1 || (diff.length == 1 && diff[0][0] != 0)) {
-        last_state = text;
-        sync(diff);
+        var text = pads.editor[name].getSession().getValue();
+        var diff = difflib.diff_main(pads.state[name], text);
+
+        if (diff.length > 1 || (diff.length == 1 && diff[0][0] != 0)) {
+            pads.state[name] = text;
+            sync(name, diff);
+        }
     }
 }
 
-var sync = function(diff) {
-    log("Sending changes");
-    socket.send("CMD PATCH:"+difflib.patch_make(diff));
-    // socket.send(JSON.stringify(diff));
+var sync = function(editor_name, diff) {
+    log("Sending changes of "+editor_name);
+    var doc_name = pads.doc_name[editor_name];
+    socket.send("CMD PATCH:"+doc_name+":"+difflib.patch_make(diff));
+}
+
+var split_command = function(msg) {
+    var i = msg.indexOf(":");
+    if (i != -1) {
+        var command = msg.slice(0, i);
+        var j = msg.indexOf(":", i+1);
+        if (j != -1) {
+            var doc_name = msg.slice(i+1, j);
+            var args = msg.slice(j+1);
+            return new Array(command, doc_name, args);
+        } else {
+            var doc_name = msg.slice(i+1);
+            return new Array(command, doc_name);
+        }
+    }
+
+    log("Invalid command from server", "error")
 }

@@ -17,13 +17,12 @@ HANDSHAKE = (
 )
 
 class WebSocketsHandler(Protocol):
-    def __init__(self):        
-        self.handshaken = False
-        self.client = None
-        self.server = None
-        self.handshaken = False
-        self.header = ""
-        self.data = ""
+    def __init__(self):
+        self.__client = None
+        self.__server = None
+        self.__handshaken = False
+        self.__header = ""
+        self.__data = ""
 
     def on_connect(self):
         pass
@@ -36,25 +35,25 @@ class WebSocketsHandler(Protocol):
 
 
     def connectionMade(self):
-        self.server = self.transport.getHost()
-        self.client = self.transport.getPeer()
+        self.__server = self.transport.getHost()
+        self.__client = self.transport.getPeer()
         self.on_connect()
     
     def connectionLost(self, reason):
         self.on_disconnect(reason)
 
     def dataReceived(self, data):
-        if not self.handshaken:
-            self.header += data
-            if self.header.find('\r\n\r\n') != -1:
-                parts = self.header.split('\r\n\r\n', 1)
-                self.header = parts[0]
-                if self._dohandshake(self.header, parts[1]):
-                    self.handshaken = True
+        if not self.__handshaken:
+            self.__header += data
+            if self.__header.find('\r\n\r\n') != -1:
+                parts = self.__header.split('\r\n\r\n', 1)
+                self.__header = parts[0]
+                if self._dohandshake(self.__header, parts[1]):
+                    self.__handshaken = True
         else:
-            self.data += data
-            msgs = self.data.split('\xff')
-            self.data = msgs.pop()
+            self.__data += data
+            msgs = self.__data.split('\xff')
+            self.__data = msgs.pop()
             for msg in msgs:
                 if msg[0] == '\x00':
                     self.on_message(msg[1:])
@@ -65,6 +64,10 @@ class WebSocketsHandler(Protocol):
             data = data.encode('utf-8')
 
         self.transport.write("\x00%s\xff" % data)
+
+    def send_command(self, *args):
+        msg = ':'.join(args)
+        self.send(msg)
 
     def _dohandshake(self, header, key=None):
         digitRe = re.compile(r'[^0-9]')
@@ -95,15 +98,15 @@ class WebSocketsHandler(Protocol):
             response = hashlib.md5(challenge).digest()
             handshake = HANDSHAKE % {
                 'origin': origin,
-                'port': self.server.port,
-                'bind': self.server.host
+                'port': self.__server.port,
+                'bind': self.__server.host
             }
             handshake += response
         else:
             handshake = HANDSHAKE % {
                 'origin': origin,
-                'port': self.server.port,
-                'bind': self.server.host
+                'port': self.__server.port,
+                'bind': self.__server.host
             }
         self.transport.write(handshake)
 
