@@ -55,6 +55,7 @@ class WebClient(WebSocketsHandler):
         self.factory.clients.append(self)
         self.server = self.factory.server
         self.documents = {}
+        self.client_info = {}
 
     def on_message(self, data):
         print 'message received:', data
@@ -71,12 +72,27 @@ class WebClient(WebSocketsHandler):
 
     def on_disconnect(self, reason):
         print 'connection lost'
+
+        for client in self.factory.clients:
+            if client != self:
+                client.send_command('USERDISCONNECT', **self.client_info)
+
         self.factory.clients.remove(self)
 
 
     def cmd_regitry(self, data):
         if data['key'] == md5(data['email']+config.SALT):
-            self.send_command('REGISTRY')
+            self.client_info = dict(name=data['name'],
+                                    email=data['email'],
+                                    email_hash=data['email_hash'])
+
+            connected_users = []
+            for client in self.factory.clients:
+                if client != self:
+                    client.send_command('USERCONNECT', **self.client_info)
+                    connected_users.append(client.client_info);
+
+            self.send_command('REGISTRY', users=connected_users);
         else:
             self.transport.loseConnection()
 

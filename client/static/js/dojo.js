@@ -57,10 +57,11 @@ var init_sockets = function() {
             socket.onopen = function() {
                 log('Connection made');
                 send({
-                    command : 'REGISTRY',
-                    name    : $("#user-name").val(),
-                    email   : $("#user-email").val(),
-                    key     : $("#key").val()
+                    command    : 'REGISTRY',
+                    name       : $("#user-name").val(),
+                    email      : $("#user-email").val(),
+                    email_hash : $("#user-email-hash").val(),
+                    key        : $("#key").val()
                 });
             }
             
@@ -73,6 +74,10 @@ var init_sockets = function() {
                     cmd_content(data);
                 } else if (data["command"] == "PATCH") {
                     cmd_patch(data);
+                } else if (data["command"] == "USERCONNECT") {
+                    cmd_user_connect(data);
+                } else if (data["command"] == "USERDISCONNECT") {
+                    cmd_user_disconnect(data);
                 }
             }
             
@@ -135,13 +140,20 @@ var cmd_regitry = function(data) {
             doc_name : pads.doc_name[name],
         });
     }
+
+    for (var i=0; i<data['users'].length; i++) {
+        add_user(data['users'][i]['email'], 
+                 data['users'][i]['email_hash'], 
+                 data['users'][i]['name']);
+    }
 }
 
 var cmd_content = function(data) {
     log("Updating with server content");
 
-    pads.editor[data['doc_name']].getSession().setValue(data['content']);
-    pads.state[data['doc_name']] = data['content'];
+    name = data['doc_name'];
+    pads.editor[name].getSession().setValue(data['content']);
+    pads.state[name] = data['content'];
 }
 
 var cmd_patch = function(data) {
@@ -155,10 +167,24 @@ var cmd_patch = function(data) {
     pads.state[name] = new_text;
 }
 
+var cmd_user_connect = function(data) {
+    log("User "+data["name"]+" connected");
+
+    add_user(data['email'], data['email_hash'], data['name']);
+}
+
+var cmd_user_disconnect = function(data) {
+    log("User "+data["name"]+" disconnected");
+
+    remove_user(data['email_hash']);
+}
+
 //====
 
 var add_user = function(email, email_hash, name) {
     users_online.push(email_hash);
+    
+    // log("Users online: "+users_online);
 
     var gravatar = "http://www.gravatar.com/avatar/";
     var html = "<div id='user-"+email_hash+"' class='user'>"
@@ -170,6 +196,10 @@ var add_user = function(email, email_hash, name) {
 }
 
 var remove_user = function(email_hash) {
-    users_online.pop(email_hash);
+    var i = users_online.indexOf(email_hash);
+    users_online.splice(i, i+1);
+
+    // log("Users online: "+users_online);
+    
     $("#user-"+email_hash).remove();
 }
