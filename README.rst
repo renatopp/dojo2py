@@ -37,7 +37,12 @@ Second, up the websockets server::
     cd dojo2py/server
     python server.py
 
-So, open dojo2py/client/index.html on your webbrowser (google chrome or safari)
+Third, up flask server::
+
+    cd dojo2py/client
+    python client.py
+
+So, open http://127.0.0.1:5000 on your webbrowser (google chrome or safari)
 
 
 Development:
@@ -53,12 +58,7 @@ Second, up the websockets server::
     cd dojo2py/server
     python server.py
 
-Third, up flask server::
-
-    cd dojo2py/client
-    python client.py
-
-So, open http://127.0.0.1:5000 on your webbrowser (google chrome or safari)
+So, open dojo2py/client/index.html on your webbrowser (google chrome or safari)
 
 
 ---------------
