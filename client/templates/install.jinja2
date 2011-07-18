@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Dojo2py - Instalando a aplicação</title>
+    <link href="/static/css/reset.css" rel="stylesheet"></link>
+    <link href="/static/css/client.css" rel="stylesheet"></link>
+    
+    <script src="/static/js/jquery-1.6.2.min.js"></script>
+</head>
+
+<body>
+  <div id="main-install">
+    <div class="logo">
+      <img src="/static/images/logo-mini.png">
+    </div>
+
+    <p>Instalando a aplicação: coloque o email <br>e a senha do o organizador do dojo</p>
+    <br>
+    <form method="post" action="/install">
+      <dl>
+        <div class="row">
+          <span class="title">Servidor WebSockets:</span>
+          <span class="obs">*Ex: 127.0.0.1:8000 (sem http://)</span>
+          <input type="text" name="host">
+        </div>
+        <div class="row">
+          <span class="title">Email do organizador:</span>
+          <input type="text" name="user_email">
+        </div>
+        <div class="row">
+          <span class="title">Senha:</span>
+          <input type="password" name="user_password">
+        </div>
+      </dl>
+      
+      <br>
+
+      <div class="button">
+        <input type="submit" value="Instalar">
+      </div>
+    </form>
+  </div>
+</body>
+</html>

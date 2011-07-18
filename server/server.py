@@ -6,10 +6,14 @@ import hashlib
 from twisted.internet.protocol import Protocol, Factory
 from twisted.internet import reactor
 
+import config
 from handler import WebSocketsHandler
 from diff_match_patch import diff_match_patch
 
 difflib = diff_match_patch()
+
+def md5(string):
+    return hashlib.md5(string).hexdigest()
 
 class Document(object):
     def __init__(self, name):
@@ -61,7 +65,9 @@ class WebClient(WebSocketsHandler):
         else:
             command, doc_name = data.split(':', 1)
 
-        if command == 'CMD OPENDOCUMENT':
+        if command == 'CMD REGISTRY':
+            self.cmd_regitry(doc_name, arg)
+        elif command == 'CMD OPENDOCUMENT':
             self.cmd_open_document(doc_name)
         elif command == 'CMD CONTENT':
             self.cmd_content(doc_name)
@@ -72,6 +78,12 @@ class WebClient(WebSocketsHandler):
         print 'connection lost'
         self.factory.clients.remove(self)
 
+
+    def cmd_regitry(self, email, key):
+        if key == md5(email+config.SALT):
+            self.send_command('CMD REGISTRY')
+        else:
+            self.transport.loseConnection()
 
     def cmd_content(self, doc_name):
         if doc_name not in self.documents:
@@ -100,7 +112,7 @@ class WebClient(WebSocketsHandler):
 def main():
     server = Server()
     f = Factory()
-
+    # f.client_host = 
     f.protocol = WebClient
     f.clients = []
     f.server = server

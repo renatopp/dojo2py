@@ -51,14 +51,11 @@ var init_sockets = function() {
         timer.stop();
     } else {
         try {
-            socket = new WebSocket("ws://127.0.0.1:8080")
+            socket = new WebSocket("ws://"+$("#host").val());
 
             socket.onopen = function() {
                 log('Connection made');
-                for (var i=0; i<pads.names.length; i++) {
-                    var name = pads.names[i];
-                    socket.send("CMD OPENDOCUMENT:"+pads.doc_name[name]);
-                }
+                socket.send("CMD REGISTRY:"+$("#user-email").val()+":"+$("#key").val())
             }
             
             socket.onmessage = function(msg) {
@@ -68,13 +65,18 @@ var init_sockets = function() {
                 var args = data[2];
                 var name = doc_names[doc_name];
 
-                if (command == "CMD CONTENT") {
+                if (command == "CMD REGISTRY") {
+                    log("Registration OK");
+                    for (var i=0; i<pads.names.length; i++) {
+                        var name = pads.names[i];
+                        socket.send("CMD OPENDOCUMENT:"+pads.doc_name[name]);
+                    }
+                } else if (command == "CMD CONTENT") {
                     log("Updating with server content");
                     pads.editor[name].getSession().setValue(args);
                     pads.state[name] = args;
                 } else if (command == "CMD PATCH") {
                     log("Applying changes");
-
                     var patches = difflib.patch_fromText(args);
                     var text = pads.editor[name].getSession().getValue();
                     var new_text = difflib.patch_apply(patches, text)[0];
@@ -125,6 +127,8 @@ var split_command = function(msg) {
             var doc_name = msg.slice(i+1);
             return new Array(command, doc_name);
         }
+    } else {
+        return new Array(msg);
     }
 
     log("Invalid command from server", "error")

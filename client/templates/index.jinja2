@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Dojo2py</title>
+    <link href="/static/css/reset.css" rel="stylesheet"></link>
+    <link href="/static/css/client.css" rel="stylesheet"></link>
+    
+    <script src="/static/js/jquery-1.6.2.min.js"></script>
+</head>
+
+<body>
+  <div id="main-install">
+    <div class="logo">
+      <img src="/static/images/logo-mini.png">
+    </div>
+
+    <p>Participe do Dojo!</p>
+    <br>
+
+    <form method="post" action="/dojo">
+      <dl>
+        <div class="row">
+          <span class="title">Email:</span>
+          <input type="text" name="user_email">
+        </div>
+        <div class="row">
+          <span class="title">Nome:</span>
+          <input type="text" name="user_name">
+        </div>
+        <div class="row">
+          <span class="title">Senha:</span>
+          <span class="obs" style="color:red">*Só para o organizador</span>
+          <input type="password" name="user_password">
+        </div>
+      </dl>
+      
+      <br>
+
+      <div class="button">
+        <input type="submit" value="Entrar">
+      </div>
+    </form>
+  </div>
+</body>
+</html>

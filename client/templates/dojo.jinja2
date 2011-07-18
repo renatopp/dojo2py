@@ -2,20 +2,20 @@
 <html>
 <head>
     <title>Dojo2py</title>
-    <link href="static/css/reset.css" rel="stylesheet"></link>
-    <link href="static/css/dojo.css" rel="stylesheet"></link>
-    <link href="static/css/log.css" rel="stylesheet"></link>
+    <link href="/static/css/reset.css" rel="stylesheet"></link>
+    <link href="/static/css/dojo.css" rel="stylesheet"></link>
+    <link href="/static/css/log.css" rel="stylesheet"></link>
 
-    <script src="static/js/jquery-1.6.2.min.js"></script>
-    <script src="static/js/jquery.timer.js"></script>
-    <script src="static/js/diff_match_patch.js"></script>
+    <script src="/static/js/jquery-1.6.2.min.js"></script>
+    <script src="/static/js/jquery.timer.js"></script>
+    <script src="/static/js/diff_match_patch.js"></script>
 
-    <script src="static/js/ace.js"></script>
-    <script src="static/js/mode-python.js"></script>
-    <script src="static/js/theme-monokai.js"></script>
+    <script src="/static/js/ace.js"></script>
+    <script src="/static/js/mode-python.js"></script>
+    <script src="/static/js/theme-monokai.js"></script>
     
-    <script src="static/js/log.js"></script>
-    <script src="static/js/dojo.js"></script>
+    <script src="/static/js/log.js"></script>
+    <script src="/static/js/dojo.js"></script>
 
     <script>
     $(document).ready(function() {
@@ -26,11 +26,11 @@
 
 <body>
     <div style="display:none">
-        <input type="hidden" id="host" value="127.0.0.1:8080">
-        <input type="hidden" id="key" value="9db956db66b4565b3f45b45e2e2382b4">
-        <input type="hidden" id="user-name" value="Renato Pereira">
-        <input type="hidden" id="user-email" value="renato.ppontes@gmail.com">
-        <input type="hidden" id="user-email-hash" value="9db956db66b4565b3f45b45e2e2382b4">
+        <input type="hidden" id="host" value="{{host}}">
+        <input type="hidden" id="key" value="{{key}}">
+        <input type="hidden" id="user-name" value="{{request.form['user_name']}}">
+        <input type="hidden" id="user-email" value="{{request.form['user_email']}}">
+        <input type="hidden" id="user-email-hash" value="{{user_email_hash}}">
     </div>
     
     <div id="main">
@@ -50,7 +50,7 @@
         </div>
         <div id="rightbar">
             <div class="logo">
-                <img src="static/images/logo-mini.png">
+                <img src="/static/images/logo-mini.png">
             </div>
 
             <div class="box-rightbar">
