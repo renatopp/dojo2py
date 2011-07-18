@@ -1,5 +1,6 @@
 #-*- coding:utf-8 -*-
 import re
+import json
 import struct
 import hashlib
 from twisted.internet.protocol import Protocol, Factory
@@ -65,8 +66,10 @@ class WebSocketsHandler(Protocol):
 
         self.transport.write("\x00%s\xff" % data)
 
-    def send_command(self, *args):
-        msg = ':'.join(args)
+    def send_command(self, command, **kwargs):
+        kwargs['command'] = command
+        msg = json.dumps(kwargs)
+        print 'Sending command:', msg
         self.send(msg)
 
     def _dohandshake(self, header, key=None):

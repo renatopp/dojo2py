@@ -13,6 +13,7 @@ var pads = {
 
 var doc_names = {};
 
+//====
 
 var init = function() {
     init_editor("maineditor", "testeditor");
@@ -55,33 +56,23 @@ var init_sockets = function() {
 
             socket.onopen = function() {
                 log('Connection made');
-                socket.send("CMD REGISTRY:"+$("#user-email").val()+":"+$("#key").val())
+                send({
+                    command : 'REGISTRY',
+                    name    : $("#user-name").val(),
+                    email   : $("#user-email").val(),
+                    key     : $("#key").val()
+                });
             }
             
             socket.onmessage = function(msg) {
-                var data = split_command(msg.data);
-                var command = data[0];
-                var doc_name = data[1];
-                var args = data[2];
-                var name = doc_names[doc_name];
+                var data = receive(msg.data);
 
-                if (command == "CMD REGISTRY") {
-                    log("Registration OK");
-                    for (var i=0; i<pads.names.length; i++) {
-                        var name = pads.names[i];
-                        socket.send("CMD OPENDOCUMENT:"+pads.doc_name[name]);
-                    }
-                } else if (command == "CMD CONTENT") {
-                    log("Updating with server content");
-                    pads.editor[name].getSession().setValue(args);
-                    pads.state[name] = args;
-                } else if (command == "CMD PATCH") {
-                    log("Applying changes");
-                    var patches = difflib.patch_fromText(args);
-                    var text = pads.editor[name].getSession().getValue();
-                    var new_text = difflib.patch_apply(patches, text)[0];
-                    pads.editor[name].getSession().setValue(new_text);
-                    pads.state[name] = new_text;
+                if (data["command"] == "REGISTRY") {
+                    cmd_regitry(data);
+                } else if (data["command"] == "CONTENT") {
+                    cmd_content(data);
+                } else if (data["command"] == "PATCH") {
+                    cmd_patch(data);
                 }
             }
             
@@ -94,10 +85,11 @@ var init_sockets = function() {
     }
 }
 
+//====
+
 var update = function() {
     for (var i=0; i<pads.names.length; i++) {
         var name = pads.names[i];
-
         var text = pads.editor[name].getSession().getValue();
         var diff = difflib.diff_main(pads.state[name], text);
 
@@ -110,30 +102,58 @@ var update = function() {
 
 var sync = function(editor_name, diff) {
     log("Sending changes of "+editor_name);
+
     var doc_name = pads.doc_name[editor_name];
-    socket.send("CMD PATCH:"+doc_name+":"+difflib.patch_make(diff));
+    send({
+        command  : 'PATCH',
+        doc_name : doc_name,
+        patches  : difflib.patch_toText(difflib.patch_make(diff))
+    });
 }
 
-var split_command = function(msg) {
-    var i = msg.indexOf(":");
-    if (i != -1) {
-        var command = msg.slice(0, i);
-        var j = msg.indexOf(":", i+1);
-        if (j != -1) {
-            var doc_name = msg.slice(i+1, j);
-            var args = msg.slice(j+1);
-            return new Array(command, doc_name, args);
-        } else {
-            var doc_name = msg.slice(i+1);
-            return new Array(command, doc_name);
-        }
-    } else {
-        return new Array(msg);
+//====
+
+var send = function(object) {
+    msg = JSON.stringify(object);
+    socket.send(msg);
+}
+
+var receive = function(msg) {
+    object = JSON.parse(msg);
+    return object;
+}
+
+//====
+
+var cmd_regitry = function(data) {
+    log("Registration OK");
+
+    for (var i=0; i<pads.names.length; i++) {
+        var name = pads.names[i];
+        send({
+            command  : 'OPENDOCUMENT',
+            doc_name : pads.doc_name[name],
+        });
     }
-
-    log("Invalid command from server", "error")
 }
 
+var cmd_content = function(data) {
+    log("Updating with server content");
+
+    pads.editor[data['doc_name']].getSession().setValue(data['content']);
+    pads.state[data['doc_name']] = data['content'];
+}
+
+var cmd_patch = function(data) {
+    log("Applying changes");
+
+    name = doc_names[data['doc_name']];
+    var patches = difflib.patch_fromText(data['patches']);
+    var text = pads.editor[name].getSession().getValue();
+    var new_text = difflib.patch_apply(patches, text)[0];
+    pads.editor[name].getSession().setValue(new_text);
+    pads.state[name] = new_text;
+}
 
 //====
 
@@ -152,5 +172,4 @@ var add_user = function(email, email_hash, name) {
 var remove_user = function(email_hash) {
     users_online.pop(email_hash);
     $("#user-"+email_hash).remove();
-    // alert($("#user-renato.ppontes@gmail.com").append("lol"));
 }

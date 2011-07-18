@@ -1,6 +1,7 @@
 #-*- coding:utf-8 -*-
 import re
 import time
+import json
 import struct
 import hashlib
 from twisted.internet.protocol import Protocol, Factory
@@ -57,42 +58,40 @@ class WebClient(WebSocketsHandler):
 
     def on_message(self, data):
         print 'message received:', data
-        print 'documents:', self.server.documents
-        print 'opened:', self.documents
+        data = json.loads(data)
 
-        if data.count(':') > 1:
-            command, doc_name, arg = data.split(':', 2)
-        else:
-            command, doc_name = data.split(':', 1)
-
-        if command == 'CMD REGISTRY':
-            self.cmd_regitry(doc_name, arg)
-        elif command == 'CMD OPENDOCUMENT':
-            self.cmd_open_document(doc_name)
-        elif command == 'CMD CONTENT':
-            self.cmd_content(doc_name)
-        elif command == 'CMD PATCH':
-            self.cmd_patch(doc_name, arg)
+        if data['command'] == 'REGISTRY':
+            self.cmd_regitry(data)
+        elif data['command'] == 'OPENDOCUMENT':
+            self.cmd_open_document(data)
+        elif data['command'] == 'CONTENT':
+            self.cmd_content(data)
+        elif data['command'] == 'PATCH':
+            self.cmd_patch(data)
 
     def on_disconnect(self, reason):
         print 'connection lost'
         self.factory.clients.remove(self)
 
 
-    def cmd_regitry(self, email, key):
-        if key == md5(email+config.SALT):
-            self.send_command('CMD REGISTRY')
+    def cmd_regitry(self, data):
+        if data['key'] == md5(data['email']+config.SALT):
+            self.send_command('REGISTRY')
         else:
             self.transport.loseConnection()
 
-    def cmd_content(self, doc_name):
+    def cmd_content(self, data):
+        doc_name = data['doc_name']
         if doc_name not in self.documents:
             self.documents[doc_name] = self.server.open_document(doc_name)
 
         content = self.documents[doc_name].content
-        self.send_command('CMD CONTENT', doc_name, content)
+        self.send_command('CONTENT', doc_name=doc_name, content=content)
 
-    def cmd_patch(self, doc_name, patches):
+    def cmd_patch(self, data):
+        doc_name = data['doc_name'] 
+        patches = data['patches']
+
         if doc_name not in self.documents:
             self.documents[doc_name] = self.server.open_document(doc_name)
 
@@ -101,11 +100,11 @@ class WebClient(WebSocketsHandler):
 
         for client in self.factory.clients:
             if client != self and doc_name in client.documents:
-                client.send_command('CMD PATCH', doc_name, patches)
+                client.send_command('PATCH', doc_name=doc_name, patches=patches)
 
-    def cmd_open_document(self, doc_name):
-        self.document = self.server.open_document(doc_name)
-        self.cmd_content(doc_name)
+    def cmd_open_document(self, data):
+        self.document = self.server.open_document(data['doc_name'])
+        self.cmd_content(data)
 
 
 
